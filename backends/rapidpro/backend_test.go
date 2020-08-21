@@ -15,8 +15,6 @@ import (
 
 	"encoding/json"
 
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/garyburd/redigo/redis"
 	"github.com/nyaruka/courier"
 	"github.com/nyaruka/courier/queue"
@@ -31,28 +29,39 @@ type BackendTestSuite struct {
 	b *backend
 }
 
-type mockS3Client struct {
-	s3iface.S3API
-}
-
-func (m *mockS3Client) PutObject(*s3.PutObjectInput) (*s3.PutObjectOutput, error) {
-	return nil, nil
-}
-
-func (m *mockS3Client) HeadBucket(*s3.HeadBucketInput) (*s3.HeadBucketOutput, error) {
-	return nil, nil
-}
-
 func testConfig() *courier.Config {
 	config := courier.NewConfig()
 	config.DB = "postgres://courier:courier@localhost:5432/courier_test?sslmode=disable"
 	config.Redis = "redis://localhost:6379/0"
+	config.Storage = "mock_storage"
 	return config
+}
+
+// mock s3 storage
+
+type mockStorage struct {
+}
+
+func (m *mockStorage) Test(ctx context.Context) error {
+	return nil
+}
+
+func (m *mockStorage) PutFile(ctx context.Context, path string, contentType string, content []byte) (string, error) {
+	fileMockURL := fmt.Sprintf("https://mock.storage.com/bucket%s", path)
+	return fileMockURL, nil
+}
+
+// create mock storage
+func newMockStorage(config *courier.Config) (courier.Storage, error) {
+	return &mockStorage{}, nil
 }
 
 func (ts *BackendTestSuite) SetupSuite() {
 	// turn off logging
 	logrus.SetOutput(ioutil.Discard)
+
+	// register mock storage
+	courier.RegisterStorage("mock_storage", newMockStorage)
 
 	b, err := courier.NewBackend(testConfig())
 	if err != nil {
@@ -83,9 +92,6 @@ func (ts *BackendTestSuite) SetupSuite() {
 	r := ts.b.redisPool.Get()
 	defer r.Close()
 	r.Do("FLUSHDB")
-
-	// plug in our mock s3 client
-	ts.b.s3Client = &mockS3Client{}
 }
 
 func (ts *BackendTestSuite) TearDownSuite() {

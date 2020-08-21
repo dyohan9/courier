@@ -63,7 +63,7 @@ func writeMsg(ctx context.Context, b *backend, msg courier.Msg) error {
 	// if we have media, go download it to S3
 	for i, attachment := range m.Attachments_ {
 		if strings.HasPrefix(attachment, "http") {
-			url, err := downloadMediaToS3(ctx, b, channel, m.OrgID_, m.UUID_, attachment)
+			url, err := downloadMediaToStorage(ctx, b, channel, m.OrgID_, m.UUID_, attachment)
 			if err != nil {
 				return err
 			}
@@ -206,7 +206,7 @@ func readMsgFromDB(b *backend, id courier.MsgID) (*DBMsg, error) {
 // Media download and classification
 //-----------------------------------------------------------------------------
 
-func downloadMediaToS3(ctx context.Context, b *backend, channel courier.Channel, orgID OrgID, msgUUID courier.MsgUUID, mediaURL string) (string, error) {
+func downloadMediaToStorage(ctx context.Context, b *backend, channel courier.Channel, orgID OrgID, msgUUID courier.MsgUUID, mediaURL string) (string, error) {
 
 	parsedURL, err := url.Parse(mediaURL)
 	if err != nil {
@@ -283,18 +283,18 @@ func downloadMediaToS3(ctx context.Context, b *backend, channel courier.Channel,
 	if extension != "" {
 		filename = fmt.Sprintf("%s.%s", msgUUID, extension)
 	}
-	path := filepath.Join(b.config.S3MediaPrefix, strconv.FormatInt(int64(orgID), 10), filename[:4], filename[4:8], filename)
+	path := filepath.Join(b.config.StorageMediaPrefix, strconv.FormatInt(int64(orgID), 10), filename[:4], filename[4:8], filename)
 	if !strings.HasPrefix(path, "/") {
 		path = fmt.Sprintf("/%s", path)
 	}
 
-	s3URL, err := utils.PutS3File(b.s3Client, b.config.S3MediaBucket, path, mimeType, body)
+	storageURL, err := b.storage.PutFile(ctx, path, mimeType, body)
 	if err != nil {
 		return "", err
 	}
 
 	// return our new media URL, which is prefixed by our content type
-	return fmt.Sprintf("%s:%s", mimeType, s3URL), nil
+	return fmt.Sprintf("%s:%s", mimeType, storageURL), nil
 }
 
 //-----------------------------------------------------------------------------

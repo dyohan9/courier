@@ -12,11 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/garyburd/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	"github.com/nyaruka/courier"
@@ -677,25 +672,20 @@ func (b *backend) Start() error {
 		queue.StartDethrottler(redisPool, b.stopChan, b.waitGroup, msgQueueName)
 	}
 
-	// create our s3 client
-	s3Session, err := session.NewSession(&aws.Config{
-		Credentials:      credentials.NewStaticCredentials(b.config.AWSAccessKeyID, b.config.AWSSecretAccessKey, ""),
-		Endpoint:         aws.String(b.config.S3Endpoint),
-		Region:           aws.String(b.config.S3Region),
-		DisableSSL:       aws.Bool(b.config.S3DisableSSL),
-		S3ForcePathStyle: aws.Bool(b.config.S3ForcePathStyle),
-	})
+	// create our storage
+	b.storage, err = courier.NewStorage(b.config)
 	if err != nil {
-		return err
+		log.WithError(err).Error("Error creating storage")
 	}
-	b.s3Client = s3.New(s3Session)
 
-	// test out our S3 credentials
-	err = utils.TestS3(b.s3Client, b.config.S3MediaBucket)
+	// test out our storage
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	err = b.storage.Test(ctx)
+	cancel()
 	if err != nil {
-		log.WithError(err).Error("s3 bucket not reachable")
+		log.WithError(err).Error(fmt.Sprintf("%s storage error", b.config.Storage))
 	} else {
-		log.Info("s3 bucket ok")
+		log.Info(fmt.Sprintf("%s storage ok", b.config.Storage))
 	}
 
 	// make sure our spool dirs are writable
@@ -792,7 +782,8 @@ func newBackend(config *courier.Config) courier.Backend {
 }
 
 type backend struct {
-	config *courier.Config
+	config  *courier.Config
+	storage courier.Storage
 
 	statusCommitter batch.Committer
 	logCommitter    batch.Committer
@@ -800,9 +791,6 @@ type backend struct {
 
 	db        *sqlx.DB
 	redisPool *redis.Pool
-	s3Client  s3iface.S3API
-	awsCreds  *credentials.Credentials
-
 	popScript *redis.Script
 
 	stopChan  chan bool
