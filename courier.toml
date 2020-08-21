@@ -24,6 +24,20 @@ redis = "redis://localhost:6379/15"
 # Our spool directory for storing messages when Redis is down, this must exist and be writeable
 spool_dir = "/var/spool/courier"
 
+# What storage to use for upload medias
+storage = "minio"
+
+# prefix to our filenames for media (files will be named after the msg uuid)
+storage_media_prefix = "media"
+
+# MinIO
+
+minio_endpoint = "localhost:9000"
+minio_secure = false
+minio_media_bucket = "courier"
+minio_access_key_id = "minioadmin"
+minio_secret_access_key = "minioadmin"
+
 # Our AWS access credentials
 aws_access_key_id = "missing_aws_access_key_id"
 aws_secret_access_key = "missing_aws_secret_access_key"
@@ -34,8 +48,7 @@ s3_region = "us-east-2"
 # The S3 bucket we will write our media files to
 s3_media_bucket = "courier-test"
 
-# prefix to our filenames for media (files will be named after the msg uuid)
-s3_media_prefix = "media"
-
 # the DSN token for reporting errors to sentry
 sentry_dsn = ""
+
+log_level = "debug"

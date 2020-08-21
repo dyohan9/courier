@@ -63,6 +63,10 @@ import (
 	_ "github.com/nyaruka/courier/handlers/yo"
 	_ "github.com/nyaruka/courier/handlers/zenvia"
 
+	// load available storages
+	_ "github.com/nyaruka/courier/storages/minion"
+	_ "github.com/nyaruka/courier/storages/s3"
+
 	// load available backends
 	_ "github.com/nyaruka/courier/backends/rapidpro"
 )

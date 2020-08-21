@@ -21,11 +21,11 @@ require (
 	github.com/gorilla/schema v1.0.2
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
-	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348 // indirect
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
+	github.com/minio/minio-go/v7 v7.0.5
 	github.com/nyaruka/ezconf v0.2.1
 	github.com/nyaruka/gocommon v1.2.0
 	github.com/nyaruka/librato v1.0.0
@@ -34,14 +34,12 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
-	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1
 	gopkg.in/go-playground/validator.v9 v9.11.0
 	gopkg.in/h2non/filetype.v1 v1.0.5
-	gopkg.in/ini.v1 v1.41.0 // indirect
 )
 
 go 1.13

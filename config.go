@@ -4,22 +4,33 @@ import "github.com/nyaruka/ezconf"
 
 // Config is our top level configuration object
 type Config struct {
-	Backend                   string `help:"the backend that will be used by courier (currently only rapidpro is supported)"`
-	SentryDSN                 string `help:"the DSN used for logging errors to Sentry"`
-	Domain                    string `help:"the domain courier is exposed on"`
-	Address                   string `help:"the network interface address courier will bind to"`
-	Port                      int    `help:"the port courier will listen on"`
-	DB                        string `help:"URL describing how to connect to the RapidPro database"`
-	Redis                     string `help:"URL describing how to connect to Redis"`
-	SpoolDir                  string `help:"the local directory where courier will write statuses or msgs that need to be retried (needs to be writable)"`
-	S3Endpoint                string `help:"the S3 endpoint we will write attachments to"`
-	S3Region                  string `help:"the S3 region we will write attachments to"`
-	S3MediaBucket             string `help:"the S3 bucket we will write attachments to"`
-	S3MediaPrefix             string `help:"the prefix that will be added to attachment filenames"`
-	S3DisableSSL              bool   `help:"whether we disable SSL when accessing S3. Should always be set to False unless you're hosting an S3 compatible service within a secure internal network"`
-	S3ForcePathStyle          bool   `help:"whether we force S3 path style. Should generally need to default to False unless you're hosting an S3 compatible service"`
-	AWSAccessKeyID            string `help:"the access key id to use when authenticating S3"`
-	AWSSecretAccessKey        string `help:"the secret access key id to use when authenticating S3"`
+	Backend   string `help:"the backend that will be used by courier (currently only rapidpro is supported)"`
+	SentryDSN string `help:"the DSN used for logging errors to Sentry"`
+	Domain    string `help:"the domain courier is exposed on"`
+	Address   string `help:"the network interface address courier will bind to"`
+	Port      int    `help:"the port courier will listen on"`
+	DB        string `help:"URL describing how to connect to the RapidPro database"`
+	Redis     string `help:"URL describing how to connect to Redis"`
+	SpoolDir  string `help:"the local directory where courier will write statuses or msgs that need to be retried (needs to be writable)"`
+
+	Storage            string `help:"the storage that will be used to upload medias (s3 or minion)"`
+	StorageMediaPrefix string `help:"the prefix that will be added to attachment filenames"`
+
+	S3Endpoint         string `help:"the S3 endpoint we will write attachments to"`
+	S3Region           string `help:"the S3 region we will write attachments to"`
+	S3MediaBucket      string `help:"the S3 bucket we will write attachments to"`
+	S3DisableSSL       bool   `help:"whether we disable SSL when accessing S3. Should always be set to False unless you're hosting an S3 compatible service within a secure internal network"`
+	S3ForcePathStyle   bool   `help:"whether we force S3 path style. Should generally need to default to False unless you're hosting an S3 compatible service"`
+	AWSAccessKeyID     string `help:"the access key id to use when authenticating S3"`
+	AWSSecretAccessKey string `help:"the secret access key id to use when authenticating S3"`
+
+	MinioEndpoint        string `help:"the Minio endpoint we will write attachments to"`
+	MinioSecure          bool   `help:"whether we enable SSL when accessing MinIO"`
+	MinioRegion          string `help:"the S3 region we will write attachments to"`
+	MinioMediaBucket     string `help:"the Minio bucket we will write attachments to"`
+	MinioAccessKeyID     string `help:"the access key id to use when authenticating MinIO"`
+	MinioSecretAccessKey string `help:"the secret access key id to use when authenticating MinIO"`
+
 	FacebookApplicationSecret string `help:"the Facebook app secret"`
 	FacebookWebhookSecret     string `help:"the secret for Facebook webhook URL verification"`
 	MaxWorkers                int    `help:"the maximum number of go routines that will be used for sending (set to 0 to disable sending)"`
@@ -40,21 +51,32 @@ type Config struct {
 // NewConfig returns a new default configuration object
 func NewConfig() *Config {
 	return &Config{
-		Backend:                   "rapidpro",
-		Domain:                    "localhost",
-		Address:                   "",
-		Port:                      8080,
-		DB:                        "postgres://temba:temba@localhost/temba?sslmode=disable",
-		Redis:                     "redis://localhost:6379/15",
-		SpoolDir:                  "/var/spool/courier",
-		S3Endpoint:                "https://s3.amazonaws.com",
-		S3Region:                  "us-east-1",
-		S3MediaBucket:             "courier-media",
-		S3MediaPrefix:             "/media/",
-		S3DisableSSL:              false,
-		S3ForcePathStyle:          false,
-		AWSAccessKeyID:            "missing_aws_access_key_id",
-		AWSSecretAccessKey:        "missing_aws_secret_access_key",
+		Backend:  "rapidpro",
+		Domain:   "localhost",
+		Address:  "",
+		Port:     8080,
+		DB:       "postgres://temba:temba@localhost/temba?sslmode=disable",
+		Redis:    "redis://localhost:6379/15",
+		SpoolDir: "/var/spool/courier",
+
+		Storage:            "s3",
+		StorageMediaPrefix: "/media/",
+
+		S3Endpoint:         "https://s3.amazonaws.com",
+		S3Region:           "us-east-1",
+		S3MediaBucket:      "courier-media",
+		S3DisableSSL:       false,
+		S3ForcePathStyle:   false,
+		AWSAccessKeyID:     "missing_aws_access_key_id",
+		AWSSecretAccessKey: "missing_aws_secret_access_key",
+
+		MinioEndpoint:        "localhost:9000",
+		MinioSecure:          false,
+		MinioRegion:          "",
+		MinioMediaBucket:     "courier-media",
+		MinioAccessKeyID:     "minioadmin",
+		MinioSecretAccessKey: "minioadmin",
+
 		FacebookApplicationSecret: "missing_facebook_app_secret",
 		FacebookWebhookSecret:     "missing_facebook_webhook_secret",
 		MaxWorkers:                32,
