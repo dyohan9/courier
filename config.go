@@ -24,10 +24,10 @@ type Config struct {
 	AWSAccessKeyID     string `help:"the access key id to use when authenticating S3"`
 	AWSSecretAccessKey string `help:"the secret access key id to use when authenticating S3"`
 
-	MinioEndpoint        string `help:"the Minio endpoint we will write attachments to"`
+	MinioEndpoint        string `help:"the MinIO endpoint we will write attachments to"`
 	MinioSecure          bool   `help:"whether we enable SSL when accessing MinIO"`
-	MinioRegion          string `help:"the S3 region we will write attachments to"`
-	MinioMediaBucket     string `help:"the Minio bucket we will write attachments to"`
+	MinioRegion          string `help:"the MinIO region we will write attachments to"`
+	MinioMediaBucket     string `help:"the MinIO bucket we will write attachments to"`
 	MinioAccessKeyID     string `help:"the access key id to use when authenticating MinIO"`
 	MinioSecretAccessKey string `help:"the secret access key id to use when authenticating MinIO"`
 
